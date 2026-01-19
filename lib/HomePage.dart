@@ -1,10 +1,12 @@
 import 'dart:isolate';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:isar_community/isar.dart';
 import 'package:isar_demo/Address.dart';
 import 'package:isar_demo/GetDataCubit.dart';
+import 'package:isar_demo/ListPersonCubit.dart';
 import 'package:isar_demo/Person.dart';
 import 'package:isar_demo/RadioCubit.dart';
 
@@ -24,7 +26,6 @@ class _HomePageState extends State<HomePage> {
   final xaController = TextEditingController();
   final huyenController = TextEditingController();
   final ageController = TextEditingController();
-  final list = [];
   late final Isar isar;
   late int _selected;
 
@@ -41,6 +42,7 @@ class _HomePageState extends State<HomePage> {
       providers: [
         BlocProvider(create: (context) => RadioCubit(1)),
         BlocProvider(create: (context) => GetDataCubit(null)),
+        BlocProvider(create: (context) => ListPersonCubit([])),
       ],
       child: Builder(
         builder: (context) {
@@ -320,6 +322,24 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                   SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: () async {
+                      final listPerson = await isar.persons.filter().anyOf(
+                        [10, 111, 19],
+                        (q, element) {
+                          return q.ageEqualTo(element);
+                        },
+                      ).findAll();
+                      context.read<ListPersonCubit>().sendListPersonQueried(
+                        listPerson,
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.greenAccent,
+                    ),
+                    child: Text("Fetch", style: TextStyle(color: Colors.white)),
+                  ),
+                  SizedBox(height: 20),
                   BlocBuilder<GetDataCubit, Person?>(
                     builder: (BuildContext context, state) {
                       return Row(
@@ -337,53 +357,57 @@ class _HomePageState extends State<HomePage> {
                   SizedBox(height: 20),
                   SizedBox(
                     height: 500,
-                    child: ListView.builder(
-                      itemBuilder: (context, index) {
-                        final ps = list.elementAt(index);
-                        return Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(20),
-                              ),
-                              color: Colors.blueGrey,
-                            ),
-                            child: Padding(
+                    child: BlocBuilder<ListPersonCubit, List<Person>>(
+                      builder: (BuildContext context, List<Person> state) {
+                        return  ListView.builder(
+                          itemBuilder: (context, index) {
+                            final ps = state.elementAt(index);
+                            return Padding(
                               padding: const EdgeInsets.all(8.0),
-                              child: Row(
-                                mainAxisAlignment:
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(20),
+                                  ),
+                                  color: Colors.blueGrey,
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Row(
+                                    mainAxisAlignment:
                                     MainAxisAlignment.spaceEvenly,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    ps.id,
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        ps.id.toString(),
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      Text(
+                                        ps.name,
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      Text(
+                                        ps.age.toString(),
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  Text(
-                                    ps.name,
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  Text(
-                                    ps.age.toString(),
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
+                                ),
                               ),
-                            ),
-                          ),
+                            );
+                          },
+                          itemCount: state.length,
                         );
                       },
-                      itemCount: list.length,
                     ),
                   ),
                 ],
