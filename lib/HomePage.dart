@@ -324,14 +324,38 @@ class _HomePageState extends State<HomePage> {
                   SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () async {
-                      final listPerson = await isar.persons.filter().anyOf(
-                        [10, 111, 19],
-                        (q, element) {
-                          return q.ageEqualTo(element);
-                        },
-                      ).findAll();
+                      final listPerson = await isar.persons
+                          .where()
+                          .ageEqualTo(19)
+                          .filter()
+                          .address((q) {
+                            return q.huyenContains("noi");
+                          })
+                          .build();
                       context.read<ListPersonCubit>().sendListPersonQueried(
-                        listPerson,
+                        await listPerson.findAll(),
+                      );
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text("Lấy dữ liệu thành công"),
+                          action: SnackBarAction(
+                            label: "Hide",
+                            onPressed: () {
+                              print(listPerson);
+                            },
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadiusGeometry.all(
+                              Radius.circular(20),
+                            ),
+                            side: BorderSide(width: 2, color: Colors.white),
+                          ),
+                          backgroundColor: Colors.teal,
+                        ),
+                        snackBarAnimationStyle: AnimationStyle(
+                          duration: Duration(milliseconds: 500),
+                          curve: Curves.fastOutSlowIn,
+                        ),
                       );
                     },
                     style: ElevatedButton.styleFrom(
@@ -359,7 +383,7 @@ class _HomePageState extends State<HomePage> {
                     height: 500,
                     child: BlocBuilder<ListPersonCubit, List<Person>>(
                       builder: (BuildContext context, List<Person> state) {
-                        return  ListView.builder(
+                        return ListView.builder(
                           itemBuilder: (context, index) {
                             final ps = state.elementAt(index);
                             return Padding(
@@ -375,8 +399,9 @@ class _HomePageState extends State<HomePage> {
                                   padding: const EdgeInsets.all(8.0),
                                   child: Row(
                                     mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                        MainAxisAlignment.spaceEvenly,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
                                     children: [
                                       Text(
                                         ps.id.toString(),

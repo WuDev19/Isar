@@ -39,7 +39,34 @@ const PersonSchema = CollectionSchema(
   deserialize: _personDeserialize,
   deserializeProp: _personDeserializeProp,
   idName: r'id',
-  indexes: {},
+  indexes: {
+    r'name': IndexSchema(
+      id: 879695947855722453,
+      name: r'name',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'name',
+          type: IndexType.hash,
+          caseSensitive: true,
+        ),
+      ],
+    ),
+    r'age': IndexSchema(
+      id: 548969265645285521,
+      name: r'age',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'age',
+          type: IndexType.value,
+          caseSensitive: false,
+        ),
+      ],
+    ),
+  },
   links: {},
   embeddedSchemas: {r'Address': AddressSchema},
 
@@ -155,6 +182,14 @@ extension PersonQueryWhereSort on QueryBuilder<Person, Person, QWhere> {
       return query.addWhereClause(const IdWhereClause.any());
     });
   }
+
+  QueryBuilder<Person, Person, QAfterWhere> anyAge() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        const IndexWhereClause.any(indexName: r'age'),
+      );
+    });
+  }
 }
 
 extension PersonQueryWhere on QueryBuilder<Person, Person, QWhereClause> {
@@ -220,6 +255,157 @@ extension PersonQueryWhere on QueryBuilder<Person, Person, QWhereClause> {
           lower: lowerId,
           includeLower: includeLower,
           upper: upperId,
+          includeUpper: includeUpper,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Person, Person, QAfterWhereClause> nameEqualTo(String name) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'name', value: [name]),
+      );
+    });
+  }
+
+  QueryBuilder<Person, Person, QAfterWhereClause> nameNotEqualTo(String name) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'name',
+                lower: [],
+                upper: [name],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'name',
+                lower: [name],
+                includeLower: false,
+                upper: [],
+              ),
+            );
+      } else {
+        return query
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'name',
+                lower: [name],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'name',
+                lower: [],
+                upper: [name],
+                includeUpper: false,
+              ),
+            );
+      }
+    });
+  }
+
+  QueryBuilder<Person, Person, QAfterWhereClause> ageEqualTo(int age) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'age', value: [age]),
+      );
+    });
+  }
+
+  QueryBuilder<Person, Person, QAfterWhereClause> ageNotEqualTo(int age) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'age',
+                lower: [],
+                upper: [age],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'age',
+                lower: [age],
+                includeLower: false,
+                upper: [],
+              ),
+            );
+      } else {
+        return query
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'age',
+                lower: [age],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'age',
+                lower: [],
+                upper: [age],
+                includeUpper: false,
+              ),
+            );
+      }
+    });
+  }
+
+  QueryBuilder<Person, Person, QAfterWhereClause> ageGreaterThan(
+    int age, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'age',
+          lower: [age],
+          includeLower: include,
+          upper: [],
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Person, Person, QAfterWhereClause> ageLessThan(
+    int age, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'age',
+          lower: [],
+          upper: [age],
+          includeUpper: include,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Person, Person, QAfterWhereClause> ageBetween(
+    int lowerAge,
+    int upperAge, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'age',
+          lower: [lowerAge],
+          includeLower: includeLower,
+          upper: [upperAge],
           includeUpper: includeUpper,
         ),
       );
